@@ -16,28 +16,21 @@ There are two examples included with this library.  The first, EchoExample will 
 
 ## How To Use This Library
 
+```
 byte server[] = { 174, 129, 224, 73 }; //echo.websocket.org
-
 WebSocketClient client(server, "/", 80);
 
 void setup() {
-
   Ethernet.begin(mac, ip);
-
   client.connect();
-
   client.setDataArrivedDelegate(dataArrived);
-
 }
 
 void loop() {
-
   client.monitor();
-
 }
 
 void dataArrived(WebSocketClient client, String data) {
-
   Serial.println("Data Arrived: " + data);
-
 }
+```
