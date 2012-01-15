@@ -26,23 +26,31 @@
 #include <WString.h>
 #include <string.h>
 #include <stdlib.h>
-#include "WProgram.h"
+#if ARDUINO < 100
+    #include <WProgram.h>
+#else
+    #include <Arduino.h>
+#endif
 
 #ifdef WIFLY
-WebSocketClient::WebSocketClient(const char *hostname, String path, int port) :
-	_client(hostname, port)
-{
+WebSocketClient::WebSocketClient(const char *hostname, String path, int port) {
     _port = port;
     _hostname = hostname;
     _path = path;
 }
+
+bool WebSocketClient::ClientConnect() {
+    return _client.connect(_hostname, _port);
+}
 #else
-WebSocketClient::WebSocketClient(byte server[], String path, int port) :
-    _client(server, port)
-{
+WebSocketClient::WebSocketClient(byte server[], String path, int port) {
     _port = port;
     _path = path;
-    
+    memcpy(_server, server, 4);
+
+    /**
+     * TODO: Remove the conversion to String?
+     */
     _hostname = String();
     int size = sizeof(server);
     for (int i = 0; i < size; i++) {
@@ -52,13 +60,16 @@ WebSocketClient::WebSocketClient(byte server[], String path, int port) :
             _hostname += ".";
         }
     }
-    
+}
+
+bool WebSocketClient::ClientConnect() {
+    return _client.connect(_server, _port);
 }
 #endif
 
 bool WebSocketClient::connect() {
     bool result = false;
-    if (_client.connect()) {
+    if (ClientConnect()) {
         sendHandshake();
         result = readHandshake();
     }
@@ -153,4 +164,5 @@ void WebSocketClient::send (String data) {
 	_client.print(data);
     _client.print((char)255);
 }
+
 
