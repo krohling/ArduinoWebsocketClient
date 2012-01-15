@@ -29,7 +29,11 @@
 #include <stdlib.h>
 #include <WString.h>
 #include <Client.h>
-#include "WProgram.h"
+#if ARDUINO < 100
+	#include <WProgram.h>
+#else
+	#include <Arduino.h>
+#endif
 
 //Uncomment this to use WIFLY Client
 //#define WIFLY true
