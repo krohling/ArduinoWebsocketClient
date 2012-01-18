@@ -26,45 +26,18 @@
 #include <WString.h>
 #include <string.h>
 #include <stdlib.h>
-#include "WProgram.h"
 
-#ifdef WIFLY
-WebSocketClient::WebSocketClient(const char *hostname, String path, int port) :
-	_client(hostname, port)
-{
-    _port = port;
-    _hostname = hostname;
-    _path = path;
-}
-#else
-WebSocketClient::WebSocketClient(byte server[], String path, int port) :
-    _client(server, port)
-{
-    _port = port;
-    _path = path;
-    
-    _hostname = String();
-    int size = sizeof(server);
-    for (int i = 0; i < size; i++) {
-        _hostname += String(server[i]);
-        
-        if (i != size-1) {
-            _hostname += ".";
-        }
-    }
-    
-}
-#endif
-
-bool WebSocketClient::connect() {
+bool WebSocketClient::connect(char hostname[], char path[], int port) {
     bool result = false;
-    if (_client.connect()) {
-        sendHandshake();
+
+    if (_client.connect(hostname, port)) {
+        sendHandshake(hostname, path);
         result = readHandshake();
     }
     
 	return result;
 }
+
 
 bool WebSocketClient::connected() {
     return _client.connected();
@@ -76,22 +49,16 @@ void WebSocketClient::disconnect() {
 
 void WebSocketClient::monitor () {
     char character;
-	if ((character = _client.read()) == 0) {
+    
+	if (_client.available() > 0 && (character = _client.read()) == 0) {
         String data = "";
-        bool done = false;
         bool endReached = false;
-        while (!done) {
+        while (!endReached) {
             character = _client.read();
-            if (character != -1) {
+            endReached = character == -1;
+
+            if (!endReached) {
                 data += character;
-                endReached = false;
-            }
-            else if(endReached) {
-                done = true;
-            }
-            else {
-                endReached = true;
-                delay(10);
             }
         }
         
@@ -105,41 +72,48 @@ void WebSocketClient::setDataArrivedDelegate(DataArrivedDelegate dataArrivedDele
 	  _dataArrivedDelegate = dataArrivedDelegate;
 }
 
-bool WebSocketClient::readHandshake() {
-    bool result = false;
-    char character;
-    String handshake = "", line;
-    
-    while((character = _client.read()) == -1) {}
-    handshake += character;
-    
-    while((line = readLine()) != "") {
-        handshake += line;
-    }
-    
-    result = handshake.indexOf("HTTP/1.1 101 Web Socket Protocol Handshake") != -1;
-    
-    return result;
-}
-
-void WebSocketClient::sendHandshake() {
+void WebSocketClient::sendHandshake(char hostname[], char path[]) {
     _client.print("GET ");
-    _client.print(_path);
+    _client.print(path);
     _client.println(" HTTP/1.1");
     _client.println("Upgrade: WebSocket");
     _client.println("Connection: Upgrade");
     _client.print("Host: ");
-    _client.print(_hostname);
-    _client.print(":");
-    _client.println(_port);
+    _client.println(hostname);
     _client.println("Origin: ArduinoWebSocketClient");
     _client.println();
+}
+
+bool WebSocketClient::readHandshake() {
+    bool result = false;
+    char character;
+    String handshake = "", line;
+    int maxAttempts = 300, attempts = 0;
+    
+    while(_client.available() == 0 && attempts < maxAttempts) 
+    { 
+        delay(100); 
+        attempts++;
+    }
+    
+    while((line = readLine()) != "") {
+        handshake += line + '\n';
+    }
+    
+    result = handshake.indexOf("HTTP/1.1 101 Web Socket Protocol Handshake") != -1;
+    
+    if(!result) {
+        _client.stop();
+    }
+    
+    return result;
 }
 
 String WebSocketClient::readLine() {
     String line = "";
     char character;
-    while((character = _client.read()) != '\n') {
+    
+    while(_client.available() > 0 && (character = _client.read()) != '\n') {
         if (character != '\r' && character != -1) {
             line += character;
         }
