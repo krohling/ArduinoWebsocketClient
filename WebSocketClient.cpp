@@ -27,6 +27,31 @@
 #include <string.h>
 #include <stdlib.h>
 
+prog_char stringVar[] PROGMEM = "{0}";
+prog_char clientHandshakeLine1[] PROGMEM = "GET {0} HTTP/1.1";
+prog_char clientHandshakeLine2[] PROGMEM = "Upgrade: WebSocket";
+prog_char clientHandshakeLine3[] PROGMEM = "Connection: Upgrade";
+prog_char clientHandshakeLine4[] PROGMEM = "Host: {0}";
+prog_char clientHandshakeLine5[] PROGMEM = "Origin: ArduinoWebSocketClient";
+prog_char serverHandshake[] PROGMEM = "HTTP/1.1 101";
+
+PROGMEM const char *WebSocketClientStringTable[] =
+{   
+    stringVar,
+    clientHandshakeLine1,
+    clientHandshakeLine2,
+    clientHandshakeLine3,
+    clientHandshakeLine4,
+    clientHandshakeLine5,
+    serverHandshake
+};
+
+String WebSocketClient::getStringTableItem(int index) {
+    char buffer[35];
+    strcpy_P(buffer, (char*)pgm_read_word(&(WebSocketClientStringTable[index])));
+    return String(buffer);
+}
+
 bool WebSocketClient::connect(char hostname[], char path[], int port) {
     bool result = false;
 
@@ -72,15 +97,23 @@ void WebSocketClient::setDataArrivedDelegate(DataArrivedDelegate dataArrivedDele
 	  _dataArrivedDelegate = dataArrivedDelegate;
 }
 
+
 void WebSocketClient::sendHandshake(char hostname[], char path[]) {
-    _client.print("GET ");
-    _client.print(path);
-    _client.println(" HTTP/1.1");
-    _client.println("Upgrade: WebSocket");
-    _client.println("Connection: Upgrade");
-    _client.print("Host: ");
-    _client.println(hostname);
-    _client.println("Origin: ArduinoWebSocketClient");
+    String stringVar = getStringTableItem(0);
+    String line1 = getStringTableItem(1);
+    String line2 = getStringTableItem(2);
+    String line3 = getStringTableItem(3);
+    String line4 = getStringTableItem(4);
+    String line5 = getStringTableItem(5);
+    
+    line1.replace(stringVar, path);
+    line4.replace(stringVar, hostname);
+    
+    _client.println(line1);
+    _client.println(line2);
+    _client.println(line3);
+    _client.println(line4);
+    _client.println(line5);
     _client.println();
 }
 
@@ -100,7 +133,10 @@ bool WebSocketClient::readHandshake() {
         handshake += line + '\n';
     }
     
-    result = handshake.indexOf("HTTP/1.1 101 Web Socket Protocol Handshake") != -1;
+    //Serial.println(handshake);
+    
+    String response = getStringTableItem(6);
+    result = handshake.indexOf(response) != -1;
     
     if(!result) {
         _client.stop();
