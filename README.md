@@ -9,17 +9,19 @@ This library doesn't support every inch of the Websocket spec, most notably the 
 
 ## Installation instructions
 
-Once you've clone this repo locally, copy the ArduinoWebsocketClient directory into your Arduino Sketchbook directory under Libraries then restart the Arduino IDE so that it notices the new library.  Now, under File\Examples you should see ArduinoWebsocketClient.  To use the library in your app, select Sketch\Import Library\ArduinoWebsocketClient.
+Once you've cloned this repo locally, copy the ArduinoWebsocketClient directory into your Arduino Sketchbook directory under Libraries then restart the Arduino IDE so that it notices the new library.  Now, under File\Examples you should see ArduinoWebsocketClient.  To use the library in your app, select Sketch\Import Library\ArduinoWebsocketClient.
 
 ## How To Use This Library
 
 ```
-byte server[] = { 174, 129, 224, 73 }; //echo.websocket.org
-WebSocketClient client(server, "/", 80);
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+char server[] = "echo.websocket.org";
+WebSocketClient client;
 
 void setup() {
-  Ethernet.begin(mac, ip);
-  client.connect();
+  Serial.begin(9600);
+  Ethernet.begin(mac);
+  client.connect(server);
   client.setDataArrivedDelegate(dataArrived);
   client.send("Hello World!");
 }
@@ -35,4 +37,4 @@ void dataArrived(WebSocketClient client, String data) {
 
 ## Examples
 
-There are two examples included with this library.  The first, EchoExample will connect to echo.websocket.org, which hosts a service that simply echos any messages that you send it via Websocket.  This example sends the message "Hello World!".  If the example runs correctly, the Arduino will receive this same message back over the Websocket and print it via Serial.println.  The second example does the exact same thing, but is modified to work with the [WiFly Client library](https://github.com/sparkfun/WiFly-Shield).  For this example to compile correctly you must open WebsocketClient.h and follow instructions to uncomment the specified compiler directive.  If your Arduino uses an Ethernet shield don't bother with the WiFly example.
+There example included with this library, EchoExample, will connect to echo.websocket.org, which hosts a service that simply echos any messages that you send it via Websocket.  This example sends the message "Hello World!".  If the example runs correctly, the Arduino will receive this same message back over the Websocket and print it via Serial.println.
