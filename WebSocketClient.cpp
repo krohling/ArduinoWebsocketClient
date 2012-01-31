@@ -133,8 +133,6 @@ bool WebSocketClient::readHandshake() {
         handshake += line + '\n';
     }
     
-    //Serial.println(handshake);
-    
     String response = getStringTableItem(6);
     result = handshake.indexOf(response) != -1;
     
