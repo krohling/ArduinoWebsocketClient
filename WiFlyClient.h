@@ -16,7 +16,7 @@ public:
   // Let the user worry about authentication and pin mapping.
   WiFlyClient(WiFlySerial *WiFly);
 
-  int connect(char hostname[], char path[] = "/", int port = 80);
+  bool connect(char hostname[], char path[] = "/", int port = 80);
 
   void print(const char *str);
   void print(const String *str);
@@ -29,15 +29,11 @@ public:
   bool connected();
   void stop();
 
-  operator bool();
-
 private:
 
   WiFlySerial _WiFly;
-
   int _port;
   char _hostname[];
-  char _path[];
 
 };
 
