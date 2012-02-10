@@ -1,4 +1,3 @@
-#include "Arduino.h"
 #include "WiFlyClient.h"
 #include <WiFlySerial.h>
 
