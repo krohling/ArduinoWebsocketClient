@@ -26,6 +26,7 @@
 #include <WString.h>
 #include <string.h>
 #include <stdlib.h>
+#include "WiFlyClient.h"
 
 prog_char stringVar[] PROGMEM = "{0}";
 prog_char clientHandshakeLine1[] PROGMEM = "GET {0} HTTP/1.1";
@@ -45,6 +46,13 @@ PROGMEM const char *WebSocketClientStringTable[] =
     clientHandshakeLine5,
     serverHandshake
 };
+
+#ifdef WIFLY
+WebSocketClient::WebSocketClient(WiFlySerial &WiFly) : _client(WiFly) {
+
+}
+#endif
+
 
 String WebSocketClient::getStringTableItem(int index) {
 char buffer[35];
