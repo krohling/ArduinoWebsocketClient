@@ -1,5 +1,5 @@
 #ifndef WIFLYCLIENT_H
-#define WIFLYCLIENT_H
+#define WIFLYCLIENT_H_
 
 #include "Arduino.h"
 
@@ -9,32 +9,32 @@
 
 class WiFlyClient {
 
-public:
+    public:
 
-  // constructor expects an initialized, and fully
-  // connected instance of the WiFly driver.
-  // Let the user worry about authentication and pin mapping.
-  WiFlyClient(WiFlySerial *WiFly);
+        // constructor expects an initialized, and fully
+        // connected instance of the WiFly driver.
+        // Let the user worry about authentication and pin mapping.
+        WiFlyClient(WiFlySerial *WiFly);
 
-  bool connect(char hostname[], int port = 80);
+        bool connect(const char hostname[], int port = 80);
 
-  void print(const char *str);
-  void print(const String *str);
+        void print(const char *str);
+        void print(const String *str);
 
-  void println(const String *str);
-  void println();
+        void println(const String *str);
+        void println();
 
-  int read();
-  int available();
+        int read();
+        int available();
 
-  bool connected();
-  void stop();
+        bool connected();
+        void stop();
 
-private:
+    private:
 
-  WiFlySerial _WiFly;
-  int _port;
-  char _hostname[];
+        WiFlySerial _WiFly;
+        int _port;
+        char _hostname[];
 
 };
 

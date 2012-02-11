@@ -2,43 +2,43 @@
 #include <WiFlySerial.h>
 
 WiFlyClient::WiFlyClient(WiFlySerial *WiFly) {
-  _WiFly = WiFly;
+    _WiFly = WiFly;
 }
 
-bool WiFlyClient::connect(char hostname[], int port = 80) {
-  _hostname = hostname;
-  _port     = port;
-  return _WiFly.openConnection(hostname, port);
+bool WiFlyClient::connect(const char hostname[], int port = 80) {
+    _hostname = hostname;
+    _port     = port;
+    return _WiFly.openConnection(hostname, port);
 }
 
 void print(const char *str) {
-  _WiFly.uart.print(str);
+    _WiFly.uart.print(str);
 }
 
 void print(const String *str) {
-  _WiFly.uart.print(str);
+    _WiFly.uart.print(str);
 }
 
 void println(const String *str) {
-  _WiFly.uart.println(str);
+    _WiFly.uart.println(str);
 }
 
 void println() {
-  _WiFly.uart.println("\n");
+    _WiFly.uart.println("\n");
 }
 
 int read() {
-  return _WiFly.uart.read();
+    return _WiFly.uart.read();
 }
 
 int available() {
-  return _WiFly.uart.available();
+    return _WiFly.uart.available();
 }
 
 bool connected() {
-  return _WiFly.isConnected();
+    return _WiFly.isConnected();
 }
 
 void stop() {
-  _WiFly.closeConnection();
+    _WiFly.closeConnection();
 }

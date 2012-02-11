@@ -47,7 +47,7 @@ PROGMEM const char *WebSocketClientStringTable[] =
 };
 
 String WebSocketClient::getStringTableItem(int index) {
-    char buffer[35];
+char buffer[35];
     strcpy_P(buffer, (char*)pgm_read_word(&(WebSocketClientStringTable[index])));
     return String(buffer);
 }
