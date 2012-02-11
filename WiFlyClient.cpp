@@ -23,6 +23,10 @@ void println(const String *str) {
   _WiFly.uart.println(str);
 }
 
+void println() {
+  _WiFly.uart.println("\n");
+}
+
 int read() {
   return _WiFly.uart.read();
 }

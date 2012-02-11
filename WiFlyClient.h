@@ -22,6 +22,7 @@ public:
   void print(const String *str);
 
   void println(const String *str);
+  void println();
 
   int read();
   int available();
