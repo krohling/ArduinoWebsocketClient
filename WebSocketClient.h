@@ -53,17 +53,29 @@ class WebSocketClient {
 #endif
 
         typedef void (*DataArrivedDelegate)(WebSocketClient client, String data);
-        bool connect(char hostname[], char path[] = "/", int port = 80);
+        bool connect(const char *hostname, const char *path = "/", int port = 80);
         bool connected();
         void disconnect();
         void monitor();
         void setDataArrivedDelegate(DataArrivedDelegate dataArrivedDelegate);
         void send(String data);
 
+        // debug utilities - use Serial : not NewSoftSerial as it will affect incoming stream.
+        // should change these to use stream <<
+        void setDebugChannel( Print* pDebug);
+        Print* getDebugChannel()  { return pDebugChannel; };
+        void clearDebugChannel();
+        void DebugPrint( const char* pMessage);
+        void DebugPrint( const int iNumber);
+        void DebugPrint( const char ch);
+
+
     private:
 
         String getStringTableItem(int index);
-        void sendHandshake(char hostname[], char path[]);
+        void sendHandshake(const char *hostname, const char *path);
+        Print* pDebugChannel;
+
 
 #ifndef WIFLY
         EthernetClient _client;

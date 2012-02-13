@@ -49,19 +49,18 @@ PROGMEM const char *WebSocketClientStringTable[] =
 
 #ifdef WIFLY
 WebSocketClient::WebSocketClient(WiFlySerial &WiFly) : _client(WiFly) {
-
 }
 #endif
 
 
 String WebSocketClient::getStringTableItem(int index) {
-char buffer[35];
+    char buffer[35];
     strcpy_P(buffer, (char*)pgm_read_word(&(WebSocketClientStringTable[index])));
     return String(buffer);
 }
 
 
-bool WebSocketClient::connect(char hostname[], char path[], int port) {
+bool WebSocketClient::connect(const char *hostname, const char *path, int port) {
     bool result = false;
 
     if (_client.connect(hostname, port)) {
@@ -103,11 +102,11 @@ void WebSocketClient::monitor () {
 }
 
 void WebSocketClient::setDataArrivedDelegate(DataArrivedDelegate dataArrivedDelegate) {
-	  _dataArrivedDelegate = dataArrivedDelegate;
+	_dataArrivedDelegate = dataArrivedDelegate;
 }
 
 
-void WebSocketClient::sendHandshake(char hostname[], char path[]) {
+void WebSocketClient::sendHandshake(const char *hostname, const char *path) {
     String stringVar = getStringTableItem(0);
     String line1 = getStringTableItem(1);
     String line2 = getStringTableItem(2);
@@ -170,4 +169,37 @@ void WebSocketClient::send (String data) {
 	_client.print(data);
     _client.print((char)255);
 }
+
+// implementation thanks to Tom Waldock and his
+// his WiFlySerial project.
+
+// setDebugChannel
+// Conduit for debug output
+// must not be a NewSoftSerial instance as incoming interrupts conflicts with outgoing data.
+void WebSocketClient::setDebugChannel(Print* pChannel) {
+    pDebugChannel = pChannel;
+#ifdef WIFLY
+    _client.setDebugChannel(pChannel);
+#endif
+}
+void WebSocketClient::clearDebugChannel() {
+    pDebugChannel = NULL;
+#ifdef WIFLY
+    _client.clearDebugChannel();
+#endif
+}
+
+void WebSocketClient::DebugPrint(const char* pMessage) {
+    if ( pDebugChannel )
+        pDebugChannel->println(pMessage);
+}
+void WebSocketClient::DebugPrint(const int iNumber) {
+    if ( pDebugChannel )
+        pDebugChannel->println(iNumber);
+}
+void WebSocketClient::DebugPrint(const char ch) {
+    if ( pDebugChannel )
+        pDebugChannel->print(ch);
+}
+
 
