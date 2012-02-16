@@ -15,6 +15,10 @@ class WiFlyClient {
         // connected instance of the WiFly driver.
         // Let the user worry about authentication and pin mapping.
         WiFlyClient(WiFlySerial &WiFly);
+    
+        WiFlyClient(const char *ssid, const char *password);
+    
+        WiFlyClient(int rxPin, int txPin, const char *ssid, const char *password);
 
         bool connect(const char *hostname, int port = 80);
 
@@ -43,7 +47,7 @@ class WiFlyClient {
 
         WiFlySerial _WiFly;
         Print* pDebugChannel;
-
+        void initializeWiFly(const char *ssid, const char *password);
 
 };
 

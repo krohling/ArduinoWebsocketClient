@@ -1,8 +1,32 @@
 #include "WiFlyClient.h"
 #include <WiFlySerial.h>
 
+#define ARD_DEFAULT_RX_PIN 2
+#define ARD_DEFAULT_TX_PIN 3
+
+WiFlyClient::WiFlyClient(int rxPin, int txPin, const char *ssid, const char *password) : _WiFly(rxPin, txPin) {
+    initializeWiFly(ssid, password);
+}
+
+WiFlyClient::WiFlyClient(const char *ssid, const char *password) : _WiFly(ARD_DEFAULT_RX_PIN, ARD_DEFAULT_TX_PIN) {
+    initializeWiFly(ssid, password);
+}
+
 WiFlyClient::WiFlyClient(WiFlySerial &WiFly) : _WiFly(WiFly) {
 
+}
+
+
+void WiFlyClient::initializeWiFly(const char *ssid, const char *password) {
+    _WiFly.begin();
+    if (!_WiFly.isConnected()) {
+        _WiFly.leave(); // restart my link
+        _WiFly.SendCommand("set com remote 0", "AOK");
+        _WiFly.SendCommand("set opt jointmr 5000", "AOK");
+        _WiFly.setSSID(ssid);
+        _WiFly.setPassphrase(password);
+        _WiFly.join();
+    }
 }
 
 bool WiFlyClient::connect(const char *hostname, int port) {

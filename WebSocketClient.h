@@ -48,6 +48,8 @@ class WebSocketClient {
 
 #ifdef WIFLY
         WebSocketClient(WiFlySerial &WiFly);
+        WebSocketClient(const char *ssid, const char *password);
+        WebSocketClient(int rxPin, int txPin, const char *ssid, const char *password);
 #else
         WebSocketClient();
 #endif

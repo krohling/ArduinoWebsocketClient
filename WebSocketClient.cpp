@@ -50,6 +50,12 @@ PROGMEM const char *WebSocketClientStringTable[] =
 #ifdef WIFLY
 WebSocketClient::WebSocketClient(WiFlySerial &WiFly) : _client(WiFly) {
 }
+
+WebSocketClient::WebSocketClient(const char *ssid, const char *password) : _client(ssid, password) {
+}
+
+WebSocketClient::WebSocketClient(int rxPin, int txPin, const char *ssid, const char *password) : _client(rxPin, txPin, ssid, password) {
+}
 #endif
 
 
