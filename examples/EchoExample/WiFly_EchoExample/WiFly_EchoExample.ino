@@ -6,13 +6,15 @@
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 char server[] = "echo.websocket.org";
-WebSocketClient client("ssid", "password");
+WebSocketClient client(2, 3, "2WIRE598", "8888986907");
 
 void setup() {
   Serial.begin(9600);
+  client.setDebugChannel( (Print*) &Serial);
   client.connect(server);
   client.setDataArrivedDelegate(dataArrived);
   client.send("Hello World!");
+  Serial.println("here");
 }
 
 void loop() {
