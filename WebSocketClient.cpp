@@ -33,6 +33,8 @@ prog_char clientHandshakeLine2[] PROGMEM = "Upgrade: WebSocket";
 prog_char clientHandshakeLine3[] PROGMEM = "Connection: Upgrade";
 prog_char clientHandshakeLine4[] PROGMEM = "Host: {0}";
 prog_char clientHandshakeLine5[] PROGMEM = "Origin: ArduinoWebSocketClient";
+prog_char clientHandshakeLine6[] PROGMEM = "Sec-WebSocket-Key1: 18x 6]8vM;54 *(5:  {   U1]8  z [  8";
+prog_char clientHandshakeLine7[] PROGMEM = "Sec-WebSocket-Key2: 1_ tx7X d  <  nw  334J702) 7]o}` 0";
 prog_char serverHandshake[] PROGMEM = "HTTP/1.1 101";
 
 PROGMEM const char *WebSocketClientStringTable[] =
@@ -43,11 +45,13 @@ PROGMEM const char *WebSocketClientStringTable[] =
     clientHandshakeLine3,
     clientHandshakeLine4,
     clientHandshakeLine5,
+    clientHandshakeLine6,
+    clientHandshakeLine7,
     serverHandshake
 };
 
 String WebSocketClient::getStringTableItem(int index) {
-    char buffer[35];
+    char buffer[60];
     strcpy_P(buffer, (char*)pgm_read_word(&(WebSocketClientStringTable[index])));
     return String(buffer);
 }
@@ -99,12 +103,15 @@ void WebSocketClient::setDataArrivedDelegate(DataArrivedDelegate dataArrivedDele
 
 
 void WebSocketClient::sendHandshake(char hostname[], char path[]) {
+    
     String stringVar = getStringTableItem(0);
     String line1 = getStringTableItem(1);
     String line2 = getStringTableItem(2);
     String line3 = getStringTableItem(3);
     String line4 = getStringTableItem(4);
     String line5 = getStringTableItem(5);
+    String line6 = getStringTableItem(6);
+    String line7 = getStringTableItem(7);
     
     line1.replace(stringVar, path);
     line4.replace(stringVar, hostname);
@@ -114,7 +121,10 @@ void WebSocketClient::sendHandshake(char hostname[], char path[]) {
     _client.println(line3);
     _client.println(line4);
     _client.println(line5);
+    _client.println(line6);
+    _client.println(line7);
     _client.println();
+    _client.print("Tm[K T2u");
 }
 
 bool WebSocketClient::readHandshake() {
@@ -133,7 +143,7 @@ bool WebSocketClient::readHandshake() {
         handshake += line + '\n';
     }
     
-    String response = getStringTableItem(6);
+    String response = getStringTableItem(8);
     result = handshake.indexOf(response) != -1;
     
     if(!result) {
