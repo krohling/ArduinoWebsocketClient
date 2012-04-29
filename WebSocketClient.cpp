@@ -2,17 +2,17 @@
  WebsocketClient, a websocket client for Arduino
  Copyright 2011 Kevin Rohling
  http://kevinrohling.com
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,6 +26,7 @@
 #include <WString.h>
 #include <string.h>
 #include <stdlib.h>
+#include "WiFlyClient.h"
 
 prog_char stringVar[] PROGMEM = "{0}";
 prog_char clientHandshakeLine1[] PROGMEM = "GET {0} HTTP/1.1";
@@ -36,7 +37,7 @@ prog_char clientHandshakeLine5[] PROGMEM = "Origin: ArduinoWebSocketClient";
 prog_char serverHandshake[] PROGMEM = "HTTP/1.1 101";
 
 PROGMEM const char *WebSocketClientStringTable[] =
-{   
+{
     stringVar,
     clientHandshakeLine1,
     clientHandshakeLine2,
@@ -46,20 +47,33 @@ PROGMEM const char *WebSocketClientStringTable[] =
     serverHandshake
 };
 
+#ifdef WIFLY
+WebSocketClient::WebSocketClient(WiFlySerial &WiFly) : _client(WiFly) {
+}
+
+WebSocketClient::WebSocketClient(const char *ssid, const char *password) : _client(ssid, password) {
+}
+
+WebSocketClient::WebSocketClient(int rxPin, int txPin, const char *ssid, const char *password) : _client(rxPin, txPin, ssid, password) {
+}
+#endif
+
+
 String WebSocketClient::getStringTableItem(int index) {
     char buffer[35];
     strcpy_P(buffer, (char*)pgm_read_word(&(WebSocketClientStringTable[index])));
     return String(buffer);
 }
 
-bool WebSocketClient::connect(char hostname[], char path[], int port) {
+
+bool WebSocketClient::connect(const char *hostname, const char *path, int port) {
     bool result = false;
 
     if (_client.connect(hostname, port)) {
         sendHandshake(hostname, path);
         result = readHandshake();
     }
-    
+
 	return result;
 }
 
@@ -74,7 +88,7 @@ void WebSocketClient::disconnect() {
 
 void WebSocketClient::monitor () {
     char character;
-    
+
 	if (_client.available() > 0 && (character = _client.read()) == 0) {
         String data = "";
         bool endReached = false;
@@ -86,7 +100,7 @@ void WebSocketClient::monitor () {
                 data += character;
             }
         }
-        
+
         if (_dataArrivedDelegate != NULL) {
             _dataArrivedDelegate(*this, data);
         }
@@ -94,21 +108,21 @@ void WebSocketClient::monitor () {
 }
 
 void WebSocketClient::setDataArrivedDelegate(DataArrivedDelegate dataArrivedDelegate) {
-	  _dataArrivedDelegate = dataArrivedDelegate;
+	_dataArrivedDelegate = dataArrivedDelegate;
 }
 
 
-void WebSocketClient::sendHandshake(char hostname[], char path[]) {
+void WebSocketClient::sendHandshake(const char *hostname, const char *path) {
     String stringVar = getStringTableItem(0);
     String line1 = getStringTableItem(1);
     String line2 = getStringTableItem(2);
     String line3 = getStringTableItem(3);
     String line4 = getStringTableItem(4);
     String line5 = getStringTableItem(5);
-    
+
     line1.replace(stringVar, path);
     line4.replace(stringVar, hostname);
-    
+
     _client.println(line1);
     _client.println(line2);
     _client.println(line3);
@@ -122,37 +136,37 @@ bool WebSocketClient::readHandshake() {
     char character;
     String handshake = "", line;
     int maxAttempts = 300, attempts = 0;
-    
-    while(_client.available() == 0 && attempts < maxAttempts) 
-    { 
-        delay(100); 
+
+    while(_client.available() == 0 && attempts < maxAttempts)
+    {
+        delay(100);
         attempts++;
     }
-    
+
     while((line = readLine()) != "") {
         handshake += line + '\n';
     }
-    
+
     String response = getStringTableItem(6);
     result = handshake.indexOf(response) != -1;
-    
+
     if(!result) {
         _client.stop();
     }
-    
+
     return result;
 }
 
 String WebSocketClient::readLine() {
     String line = "";
     char character;
-    
+
     while(_client.available() > 0 && (character = _client.read()) != '\n') {
         if (character != '\r' && character != -1) {
             line += character;
         }
     }
-    
+
     return line;
 }
 
@@ -161,4 +175,37 @@ void WebSocketClient::send (String data) {
 	_client.print(data);
     _client.print((char)255);
 }
+
+// implementation thanks to Tom Waldock and his
+// his WiFlySerial project.
+
+// setDebugChannel
+// Conduit for debug output
+// must not be a NewSoftSerial instance as incoming interrupts conflicts with outgoing data.
+void WebSocketClient::setDebugChannel(Print* pChannel) {
+    pDebugChannel = pChannel;
+#ifdef WIFLY
+    _client.setDebugChannel(pChannel);
+#endif
+}
+void WebSocketClient::clearDebugChannel() {
+    pDebugChannel = NULL;
+#ifdef WIFLY
+    _client.clearDebugChannel();
+#endif
+}
+
+void WebSocketClient::DebugPrint(const char* pMessage) {
+    if ( pDebugChannel )
+        pDebugChannel->println(pMessage);
+}
+void WebSocketClient::DebugPrint(const int iNumber) {
+    if ( pDebugChannel )
+        pDebugChannel->println(iNumber);
+}
+void WebSocketClient::DebugPrint(const char ch) {
+    if ( pDebugChannel )
+        pDebugChannel->print(ch);
+}
+
 
