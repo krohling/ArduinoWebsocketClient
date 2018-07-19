@@ -20,5 +20,5 @@ void loop() {
 }
 
 void dataArrived(WebSocketClient client, String data) {
-  Serial.println("Data Arrived: " + data);
+  Serial.println(String("Data Arrived: ") + data);
 }

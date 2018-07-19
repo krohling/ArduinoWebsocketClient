@@ -48,7 +48,7 @@ PROGMEM const char *WebSocketClientStringTable[] =
 
 String WebSocketClient::getStringTableItem(int index) {
     char buffer[35];
-    strcpy_P(buffer, (char*)pgm_read_word(&(WebSocketClientStringTable[index])));
+    strcpy_P(buffer, (char*)pgm_read_ptr(&(WebSocketClientStringTable[index])));
     return String(buffer);
 }
 
@@ -73,7 +73,7 @@ void WebSocketClient::disconnect() {
 }
 
 void WebSocketClient::monitor () {
-    char character;
+    int character;
     
 	if (_client.available() > 0 && (character = _client.read()) == 0) {
         String data = "";
@@ -83,7 +83,7 @@ void WebSocketClient::monitor () {
             endReached = character == -1;
 
             if (!endReached) {
-                data += character;
+                data += (char)character;
             }
         }
         
